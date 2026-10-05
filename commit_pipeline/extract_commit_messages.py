@@ -2,32 +2,28 @@ import os
 import subprocess
 import sys
 
-TARGET_FILE = r"D:\HarshitPC\Projects\commit-aid\commit_pipeline\data\commits.txt"
+def extract_commits(repo_path: str, output_file: str):
+    """Extracts commits from target repo and appends them to commits.txt"""
+    if not os.path.isdir(repo_path):
+        raise FileNotFoundError(f"Repository path '{repo_path}' does not exist.")
 
-def append_commit_messages(target_file=TARGET_FILE):
-    try:
-        os.makedirs(os.path.dirname(target_file), exist_ok=True)
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
-        result = subprocess.run(
-            ["git", "log", "--pretty=format:%s"],
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="ignore",
-            check=True
-        )
+    # Fetch commits from target repo without changing current directory
+    result = subprocess.run(
+        ["git", "log", "--pretty=format:%s"],
+        cwd=repo_path,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="ignore",
+        check=True
+    )
 
-        with open(target_file, "a", encoding="utf-8") as f:
-            f.write(f"--- Repository: {os.path.basename(os.getcwd())} ---\n")
-            f.write(result.stdout)
-            f.write("\n\n")
+    repo_name = os.path.basename(os.path.abspath(repo_path))
 
-        print(f"Successfully appended commits to '{target_file}'.")
+    with open(output_file, "a", encoding="utf-8") as f:
+        f.write(result.stdout)
+        f.write("\n\n")
 
-    except subprocess.CalledProcessError:
-        print("Error: Ensure you are running this inside a valid Git repository.", file=sys.stderr)
-    except Exception as e:
-        print(f"An unexpected error occurred: {e}", file=sys.stderr)
-
-if __name__ == "__main__":
-    append_commit_messages()
+    print(f"[1/2 Extract] Appended commits from '{repo_name}' to '{output_file}'")
