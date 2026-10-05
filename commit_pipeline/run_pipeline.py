@@ -6,7 +6,7 @@ from .extract_commit_messages import extract_commits
 from .process_commits import process_commits
 
 # Default paths
-BASE_DATA_DIR = r"D:\HarshitPC\Projects\commit-aid\commit_pipeline\data"
+BASE_DATA_DIR = r"D:\HarshitPC\Projects\commit-aid\data"
 DEFAULT_TXT = os.path.join(BASE_DATA_DIR, "commits.txt")
 DEFAULT_JSON = os.path.join(BASE_DATA_DIR, "commits_messages.json")
 
