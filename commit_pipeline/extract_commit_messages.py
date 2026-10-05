@@ -2,7 +2,7 @@ import os
 import subprocess
 import sys
 
-TARGET_FILE = r"D:\HarshitPC\Projects\commits.txt"
+TARGET_FILE = r"D:\HarshitPC\Projects\commit-aid\commit_pipeline\data\commits.txt"
 
 def append_commit_messages(target_file=TARGET_FILE):
     try:
