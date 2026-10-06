@@ -7,11 +7,12 @@ import ollama
 
 
 DATA_PATH = "data/commit_messages.json"
+
 VECTORSTORE_PATH = "vectorstore"
 INDEX_PATH = os.path.join(VECTORSTORE_PATH, "commits.index")
 METADATA_PATH = os.path.join(VECTORSTORE_PATH, "metadata.json")
 
-EMBEDDING_MODEL = "embeddinggemma:latest"
+EMBEDDING_MODEL = "nomic-embed-text"
 
 
 def load_commits():
@@ -20,55 +21,69 @@ def load_commits():
 
 
 def get_embedding(text):
-    response = ollama.embed(
-        model=EMBEDDING_MODEL,
-        input=text,
-    )
+    response = ollama.embed(model=EMBEDDING_MODEL, input=text)
 
-    return response["embeddings"][0]
+    embeddings = response["embeddings"]
+
+    if not embeddings:
+        raise ValueError(f"Ollama returned no embedding for input of length {len(text)}")
+
+    return embeddings[0]
 
 
 def build_index(commits):
     embeddings = []
+    valid_commits = []
 
     for i, commit in enumerate(commits):
-        print(f"Embedding {i + 1}/{len(commits)}")
+        diff = commit.get("diff", "")
 
-        diff = commit["diff"]
+        if not diff.strip():
+            print(f"Skipping {i + 1}/{len(commits)}: {commit.get('tag', '')}: {commit.get('message', '')} (empty diff)")
+            continue
+
+        print(f"Embedding {i + 1}/{len(commits)}...")
 
         embedding = get_embedding(diff)
+
         embeddings.append(embedding)
+        valid_commits.append(commit)
 
-    embeddings = np.array(
-        embeddings,
-        dtype=np.float32,
-    )
+    if not embeddings:
+        raise RuntimeError("No valid commits were found.")
 
+    embeddings = np.array(embeddings, dtype=np.float32)
     dimension = embeddings.shape[1]
+
+    print(f"\nEmbedding dimension: {dimension}")
+    print(f"Valid commits: {len(valid_commits)}")
 
     index = faiss.IndexFlatL2(dimension)
     index.add(embeddings)
 
-    return index
+    return index, valid_commits
 
 
-def main():
+def save_vectorstore(index, metadata):
     os.makedirs(VECTORSTORE_PATH, exist_ok=True)
-    commits = load_commits()
-    print(f"Loaded {len(commits)} commits")
-
-    index = build_index(commits)
 
     faiss.write_index(index, INDEX_PATH)
 
     with open(METADATA_PATH, "w", encoding="utf-8") as f:
-        json.dump(commits, f, indent=2, ensure_ascii=False)
+        json.dump(metadata, f, indent=2, ensure_ascii=False)
 
-    print()
-    print("Vector store created successfully.")
+
+def main():
+    commits = load_commits()
+    print(f"Loaded {len(commits)} commits.")
+
+    index, metadata = build_index(commits)
+    save_vectorstore(index, metadata)
+
+    print("\nVector store created successfully.")
+    print(f"Vectors:  {index.ntotal}")
     print(f"Index:    {INDEX_PATH}")
     print(f"Metadata: {METADATA_PATH}")
-    print(f"Vectors:  {index.ntotal}")
 
 
 if __name__ == "__main__":
