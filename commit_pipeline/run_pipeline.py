@@ -11,7 +11,9 @@ DEFAULT_TXT = os.path.join(BASE_DATA_DIR, "commits.txt")
 DEFAULT_JSON = os.path.join(BASE_DATA_DIR, "commits_messages.json")
 
 
-def run_pipeline(repo_path: str, txt_file: str = DEFAULT_TXT, json_file: str = DEFAULT_JSON):
+def run_pipeline(
+    repo_path: str, txt_file: str = DEFAULT_TXT, json_file: str = DEFAULT_JSON
+):
     print(f"\n=== Starting Pipeline for Repo: {repo_path} ===")
     try:
         # Step 1: Extract raw commits
@@ -27,10 +29,18 @@ def run_pipeline(repo_path: str, txt_file: str = DEFAULT_TXT, json_file: str = D
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Extract and process Git commits into structured JSON.")
-    parser.add_argument("repo_path", nargs="?", default=os.getcwd(), help="Target Git repository path")
-    parser.add_argument("--txt", default=DEFAULT_TXT, help="Custom target commits.txt path")
-    parser.add_argument("--json", default=DEFAULT_JSON, help="Custom target commits_messages.json path")
+    parser = argparse.ArgumentParser(
+        description="Extract and process Git commits into structured JSON."
+    )
+    parser.add_argument(
+        "repo_path", nargs="?", default=os.getcwd(), help="Target Git repository path"
+    )
+    parser.add_argument(
+        "--txt", default=DEFAULT_TXT, help="Custom target commits.txt path"
+    )
+    parser.add_argument(
+        "--json", default=DEFAULT_JSON, help="Custom target commits_messages.json path"
+    )
 
     args = parser.parse_args()
     run_pipeline(repo_path=args.repo_path, txt_file=args.txt, json_file=args.json)

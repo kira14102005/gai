@@ -1,6 +1,7 @@
 import os
 import subprocess
 
+
 def extract_commits(repo_path: str, output_file: str):
     """Extracts commit messages and diffs from target repo and appends them to commits.txt"""
     if not os.path.isdir(repo_path):
@@ -13,18 +14,18 @@ def extract_commits(repo_path: str, output_file: str):
         ["git", "log", "--pretty=format:%H%x1f%s"],
         cwd=repo_path,
         encoding="utf-8",
-        errors="ignore"
+        errors="ignore",
     )
 
     repo_name = os.path.basename(os.path.abspath(repo_path))
 
     with open(output_file, "a", encoding="utf-8") as f:
         f.write(f"\n--- Repository: {repo_name} ---\n")
-        
+
         for line in hashes_output.strip().splitlines():
             if not line.strip():
                 continue
-            
+
             parts = line.split("\x1f", 1)
             commit_hash = parts[0]
             subject = parts[1] if len(parts) > 1 else ""
@@ -34,7 +35,7 @@ def extract_commits(repo_path: str, output_file: str):
                 ["git", "show", "--format=", commit_hash],
                 cwd=repo_path,
                 encoding="utf-8",
-                errors="ignore"
+                errors="ignore",
             )
 
             # Delimited block for easy parsing
@@ -44,4 +45,6 @@ def extract_commits(repo_path: str, output_file: str):
             f.write(f"{diff_output}\n")
             f.write("<<<COMMIT_END>>>\n\n")
 
-    print(f"[1/2 Extract] Appended commits with diffs from '{repo_name}' to '{output_file}'")
+    print(
+        f"[1/2 Extract] Appended commits with diffs from '{repo_name}' to '{output_file}'"
+    )

@@ -1,11 +1,9 @@
-from email.mime import text
 import json
 import os
 
 import faiss
 import numpy as np
 import ollama
-
 
 DATA_PATH = "data/commit_messages.json"
 
@@ -17,7 +15,7 @@ EMBEDDING_MODEL = "embeddinggemma:latest"
 
 
 def load_commits():
-    with open(DATA_PATH, "r", encoding="utf-8") as f:
+    with open(DATA_PATH, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -27,7 +25,9 @@ def get_embedding(text):
     embeddings = response["embeddings"]
 
     if not embeddings:
-        raise ValueError(f"Ollama returned no embedding for input of length {len(text)}")
+        raise ValueError(
+            f"Ollama returned no embedding for input of length {len(text)}"
+        )
 
     return embeddings[0]
 
@@ -40,7 +40,9 @@ def build_index(commits):
         diff = commit.get("diff", "")
 
         if not diff.strip():
-            print(f"Skipping {i + 1}/{len(commits)}: {commit.get('tag', '')}: {commit.get('message', '')} (empty diff)")
+            print(
+                f"Skipping {i + 1}/{len(commits)}: {commit.get('tag', '')}: {commit.get('message', '')} (empty diff)"
+            )
             continue
 
         print(f"Embedding {i + 1}/{len(commits)}...")

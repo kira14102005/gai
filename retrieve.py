@@ -1,4 +1,3 @@
-
 import argparse
 import json
 import subprocess
@@ -7,7 +6,6 @@ from pathlib import Path
 import faiss
 import numpy as np
 import ollama
-
 
 ROOT_DIR = Path(__file__).resolve().parent
 VECTORSTORE_PATH = ROOT_DIR / "vectorstore"
@@ -25,16 +23,19 @@ def load_vectorstore():
 
     index = faiss.read_index(str(INDEX_PATH))
 
-    with open(METADATA_PATH, "r", encoding="utf-8") as f:
+    with METADATA_PATH.open(encoding="utf-8") as f:
         metadata = json.load(f)
 
     if not isinstance(metadata, list):
         raise ValueError("Metadata must be a JSON list.")
 
     if index.ntotal != len(metadata):
-        raise ValueError(
+        msg = (
             f"Index contains {index.ntotal} vectors, "
             f"but metadata contains {len(metadata)} commits."
+        )
+        raise ValueError(
+            msg
         )
 
     if index.ntotal == 0:
@@ -100,13 +101,15 @@ def retrieve_commits(diff, top_k=DEFAULT_TOP_K):
 
         commit = metadata[int(idx)]
 
-        results.append({
-            "rank": rank,
-            "distance": float(distance),
-            "tag": commit.get("tag", ""),
-            "message": commit.get("message", ""),
-            "diff": commit.get("diff", "")
-        })
+        results.append(
+            {
+                "rank": rank,
+                "distance": float(distance),
+                "tag": commit.get("tag", ""),
+                "message": commit.get("message", ""),
+                "diff": commit.get("diff", ""),
+            }
+        )
 
     return results
 
@@ -119,7 +122,7 @@ def get_staged_diff():
             text=True,
             encoding="utf-8",
             errors="replace",
-            check=True
+            check=True,
         )
     except FileNotFoundError as exc:
         raise RuntimeError("Git is not installed or is not on PATH.") from exc
