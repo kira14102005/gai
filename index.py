@@ -1,21 +1,21 @@
 import json
-import os
+from pathlib import Path
 
 import faiss
 import numpy as np
 import ollama
 
-DATA_PATH = "data/commit_messages.json"
+DATA_PATH = Path("data/commit_messages.json")
 
-VECTORSTORE_PATH = "vectorstore"
-INDEX_PATH = os.path.join(VECTORSTORE_PATH, "commits.index")
-METADATA_PATH = os.path.join(VECTORSTORE_PATH, "metadata.json")
+VECTORSTORE_PATH = Path("vectorstore")
+INDEX_PATH = VECTORSTORE_PATH / "commits.index"
+METADATA_PATH = VECTORSTORE_PATH / "metadata.json"
 
 EMBEDDING_MODEL = "embeddinggemma:latest"
 
 
 def load_commits():
-    with open(DATA_PATH, encoding="utf-8") as f:
+    with DATA_PATH.open(encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -68,11 +68,11 @@ def build_index(commits):
 
 
 def save_vectorstore(index, metadata):
-    os.makedirs(VECTORSTORE_PATH, exist_ok=True)
+    VECTORSTORE_PATH.mkdir(parents=True, exist_ok=True)
 
-    faiss.write_index(index, INDEX_PATH)
+    faiss.write_index(index, str(INDEX_PATH))
 
-    with open(METADATA_PATH, "w", encoding="utf-8") as f:
+    with METADATA_PATH.open("w", encoding="utf-8") as f:
         json.dump(metadata, f, indent=2, ensure_ascii=False)
 
 

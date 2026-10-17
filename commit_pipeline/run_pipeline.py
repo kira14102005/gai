@@ -1,14 +1,14 @@
 import argparse
-import os
 import sys
+from pathlib import Path
 
 from .extract_commit_messages import extract_commits
 from .process_commits import process_commits
 
 # Default paths
-BASE_DATA_DIR = r"D:\HarshitPC\Projects\commit-aid\data"
-DEFAULT_TXT = os.path.join(BASE_DATA_DIR, "commits.txt")
-DEFAULT_JSON = os.path.join(BASE_DATA_DIR, "commits_messages.json")
+BASE_DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+DEFAULT_TXT = BASE_DATA_DIR / "commits.txt"
+DEFAULT_JSON = BASE_DATA_DIR / "commits_messages.json"
 
 
 def run_pipeline(
@@ -24,8 +24,8 @@ def run_pipeline(
 
         print("=== Pipeline Execution Complete! ===\n")
 
-    except Exception as e:
-        print(f"Pipeline failed: {e}", file=sys.stderr)
+    except (FileNotFoundError, OSError, ValueError) as exc:
+        print(f"Pipeline failed: {exc}", file=sys.stderr)
 
 
 if __name__ == "__main__":
@@ -33,7 +33,7 @@ if __name__ == "__main__":
         description="Extract and process Git commits into structured JSON."
     )
     parser.add_argument(
-        "repo_path", nargs="?", default=os.getcwd(), help="Target Git repository path"
+        "repo_path", nargs="?", default=Path.cwd(), help="Target Git repository path"
     )
     parser.add_argument(
         "--txt", default=DEFAULT_TXT, help="Custom target commits.txt path"

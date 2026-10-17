@@ -1,5 +1,6 @@
 import argparse
 import json
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -27,7 +28,7 @@ def load_vectorstore():
         metadata = json.load(f)
 
     if not isinstance(metadata, list):
-        raise ValueError("Metadata must be a JSON list.")
+        raise TypeError("Metadata must be a JSON list.")
 
     if index.ntotal != len(metadata):
         msg = (
@@ -45,7 +46,9 @@ def load_vectorstore():
 
 
 def get_embedding(text):
-    if not isinstance(text, str) or not text.strip():
+    if not isinstance(text, str):
+        raise TypeError("Embedding input must be a string.")
+    if not text.strip():
         raise ValueError("Cannot generate an embedding for an empty diff.")
 
     try:
@@ -95,7 +98,9 @@ def retrieve_commits(diff, top_k=DEFAULT_TOP_K):
 
     results = []
 
-    for rank, (distance, idx) in enumerate(zip(distances[0], indices[0]), start=1):
+    for rank, (distance, idx) in enumerate(
+        zip(distances[0], indices[0], strict=True), start=1
+    ):
         if idx < 0:
             continue
 
@@ -115,9 +120,13 @@ def retrieve_commits(diff, top_k=DEFAULT_TOP_K):
 
 
 def get_staged_diff():
+    git_executable = shutil.which("git")
+    if git_executable is None:
+        raise RuntimeError("Git is not installed or is not on PATH.")
+
     try:
-        result = subprocess.run(
-            ["git", "diff", "--cached", "--no-ext-diff", "--unified=3"],
+        result = subprocess.run(  # noqa: S603
+            [git_executable, "diff", "--cached", "--no-ext-diff", "--unified=3"],
             capture_output=True,
             text=True,
             encoding="utf-8",

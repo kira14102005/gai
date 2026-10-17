@@ -1,23 +1,26 @@
 import json
-import os
+from pathlib import Path
 
 
 def process_commits(input_file: str, output_json: str):
     """Reads raw commits and diffs from txt and generates structured json"""
-    if not os.path.exists(input_file):
+    input_file = Path(input_file)
+    output_json = Path(output_json)
+
+    if not input_file.exists():
         raise FileNotFoundError(f"Input file '{input_file}' not found.")
 
     commit_list = []
     unique_tags = set()
 
-    with open(input_file, encoding="utf-8", errors="ignore") as f:
+    with input_file.open(encoding="utf-8", errors="ignore") as f:
         content = f.read()
 
     # Split content into individual commit blocks
     blocks = content.split("<<<COMMIT_START>>>")
 
-    for block in blocks:
-        block = block.strip()
+    for raw_block in blocks:
+        block = raw_block.strip()
         if not block:
             continue
 
@@ -46,11 +49,11 @@ def process_commits(input_file: str, output_json: str):
         unique_tags.add(tag)
         commit_list.append({"tag": tag, "message": message, "diff": diff_part})
 
-    os.makedirs(os.path.dirname(output_json), exist_ok=True)
-    with open(output_json, "w", encoding="utf-8") as f:
+    output_json.parent.mkdir(parents=True, exist_ok=True)
+    with output_json.open("w", encoding="utf-8") as f:
         json.dump(commit_list, f, indent=2, ensure_ascii=False)
 
     print(
-        f"[2/2 Process] Found {len(unique_tags)} unique tags: {sorted(list(unique_tags))}"
+        f"[2/2 Process] Found {len(unique_tags)} unique tags: {sorted(unique_tags)}"
     )
     print(f"[2/2 Process] Saved {len(commit_list)} commits to '{output_json}'")
