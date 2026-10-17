@@ -1,3 +1,4 @@
+from email.mime import text
 import json
 import os
 
@@ -12,7 +13,7 @@ VECTORSTORE_PATH = "vectorstore"
 INDEX_PATH = os.path.join(VECTORSTORE_PATH, "commits.index")
 METADATA_PATH = os.path.join(VECTORSTORE_PATH, "metadata.json")
 
-EMBEDDING_MODEL = "nomic-embed-text"
+EMBEDDING_MODEL = "embeddinggemma:latest"
 
 
 def load_commits():
@@ -43,8 +44,8 @@ def build_index(commits):
             continue
 
         print(f"Embedding {i + 1}/{len(commits)}...")
-
-        embedding = get_embedding(diff)
+        text = f"title: {commit['tag']}: {commit['message']} | text: {diff}"
+        embedding = get_embedding(text)
 
         embeddings.append(embedding)
         valid_commits.append(commit)
