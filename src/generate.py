@@ -103,12 +103,15 @@ def validate_generated_message(output, valid_tags):
     return message
 
 
-def generate_commit_message(diff, top_k=3):
+def generate_commit_message(diff, top_k=3, retrieval_diff=None):
     if not isinstance(diff, str) or not diff.strip():
         raise ValueError("Cannot generate a commit message from an empty diff.")
 
     valid_tags = load_valid_tags()
-    examples = retrieve_commits(diff, top_k=top_k)
+    examples = retrieve_commits(
+        retrieval_diff if retrieval_diff is not None else diff,
+        top_k=top_k,
+    )
     prompt = build_prompt(diff, examples, valid_tags)
 
     system_prompt = (

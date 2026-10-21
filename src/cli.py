@@ -5,12 +5,14 @@ import hashlib
 import json
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 from src.generate import generate_commit_message
 from src.retrieve import get_staged_diff
+from src.utils.diff_parser import format_changes, parse_diff
 
-DIFF_SNAPSHOT_PATH = Path.cwd() / "git_diff.txt"
+DIFF_SNAPSHOT_PATH = Path.cwd() / "src/diffs/git_diff" + int(time.time()) + ".txt"
 
 
 class CliError(RuntimeError):
@@ -205,10 +207,20 @@ def main() -> int:
     try:
         ensure_git_repository()
         print("Reading staged changes...")
-        diff = staged_diff()
+        raw_diff = staged_diff()
+        formatted_diff = format_changes(parse_diff(raw_diff))
+
+        print("\nFormatted diff for generation:")
+        print(formatted_diff)
+
+        message = generate_commit_message(
+            formatted_diff,
+            top_k=args.top_k,
+            retrieval_diff=raw_diff,
+        )
         print(f"Saved staged diff to: {DIFF_SNAPSHOT_PATH}")
-        message = generate(diff, args.top_k)
-        return interactive_loop(diff, args.top_k, message)
+        message = generate(raw_diff, args.top_k)
+        return interactive_loop(raw_diff, args.top_k, message)
     except (CliError, OSError, ValueError) as exc:
         print(f"\ngai: {exc}", file=sys.stderr)
         return 1
