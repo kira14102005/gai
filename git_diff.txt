@@ -1,0 +1,33 @@
+diff --git a/src/generate.py b/src/generate.py
+index 03a33fb..7e6d33a 100644
+--- a/src/generate.py
++++ b/src/generate.py
+@@ -12,7 +12,7 @@ from .retrieve import get_staged_diff, retrieve_commits
+ ROOT_DIR = Path(__file__).resolve().parent.parent
+ METADATA_PATH = ROOT_DIR / "vectorstore" / "metadata.json"
+ 
+-GENERATION_MODEL = "gemma3:1b"
++GENERATION_MODEL = "gemma4"
+ DEFAULT_TOP_K = 5
+ MAX_DIFF_CHARS = 10000
+ MAX_EXAMPLE_DIFF_CHARS = 600
+
+OUTPUT:
+python -m src.cli
+Reading staged changes...
+Staged diff saved to: D:\HarshitPC\Projects\commit-aid\git_diff.txt
+Saved staged diff to: D:\HarshitPC\Projects\commit-aid\git_diff.txt
+
+Retrieving similar historical commits and generating a message...
+Gemma raw response: update: Change generation model to gemma4
+
+Suggested commit:
+  update: Change generation model to gemma4
+
+[Y] Accept and commit   [e] Edit   [r] Regenerate   [n] Cancel
+> Y
+
+Committing staged changes...
+[main 247d3cc] update: Change generation model to gemma4
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+(commit-aid) 
