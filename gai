@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+GAI_PROJECT_DIR="/d/HarshitPC/Projects/commit-aid"
+
+cd "$GAI_PROJECT_DIR"
+exec python -m src.cli "$@"
