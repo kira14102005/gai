@@ -16,6 +16,52 @@ GAI follows a retrieval-augmented generation (RAG) pipeline:
 
 The raw diff is retained for retrieval and integrity checks, while the formatted representation helps the generation model focus on the actual changes.
 
+```mermaid
+flowchart TD
+    A([Run gai]) --> AZ[Invokes src/cli.py]
+    AZ --> B[Validate Git repository]
+    B --> C[Read staged Git diff]
+    C --> D{Staged changes exist?}
+
+    D -- No --> E[Display error and exit]
+    D -- Yes --> F[Preserve raw diff snapshot]
+
+    F --> G[Parse diff by file and hunk]
+    G --> H["Extract added lines, <br>removed lines and context"]
+    H --> I["Format structured diff <br>for generation"]
+
+    F --> J[Generate embedding <br>from raw diff]
+    J --> K[Search FAISS index]
+    K --> L["Retrieve top-k <br>historical commits"]
+
+    I --> M[Build generation prompt]
+    L --> M
+
+    M --> N["Call local Gemma model <br>through Ollama"]
+    N --> O[Parse generated commit message]
+    O --> P{Message valid?}
+
+    P -- No --> Q["Handle invalid output <br>or generation error"]
+    P -- Yes --> R["Display suggested <br>commit message"]
+
+    R --> S{User choice}
+    S -- Edit --> T[Enter replacement message]
+    T --> U{Edited message valid?}
+    U -- Yes --> R
+    U -- No --> R
+
+    S -- Regenerate --> M
+    S -- Cancel --> V([Exit without committing])
+
+    S -- Accept --> W[Read current staged diff again]
+    W --> X{Raw diff unchanged?}
+
+    X -- No --> Y[Abort commit and request rerun]
+    X -- Yes --> Z[Execute git commit]
+    Z --> AA{Commit successful?}
+    AA -- Yes --> AB([Done])
+    AA -- No --> AC[Display Git error]
+```
 ## FAISS Index Preparation
 
 GAI uses historical commits as examples of both code changes and commit message style.
