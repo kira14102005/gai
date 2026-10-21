@@ -1,215 +1,33 @@
-diff --git a/generate.py b/generate.py
-index 15c3dda..ba289ca 100644
---- a/generate.py
-+++ b/generate.py
-@@ -39,6 +39,126 @@ def request_commit_message(prompt, valid_tags):
+diff --git a/src/generate.py b/src/generate.py
+index 03a33fb..7e6d33a 100644
+--- a/src/generate.py
++++ b/src/generate.py
+@@ -12,7 +12,7 @@ from .retrieve import get_staged_diff, retrieve_commits
+ ROOT_DIR = Path(__file__).resolve().parent.parent
+ METADATA_PATH = ROOT_DIR / "vectorstore" / "metadata.json"
  
-     return parse_commit_message(content, valid_tags)
- 
-+def build_prompt(diff, examples, valid_tags, retry_feedback=None):
-+    examples_text = "\n".join(
-+        f"- {example['tag']}: {example['message']}"
-+        for example in examples[:3]
-+    )
-+
-+    tags_text = ", ".join(valid_tags)
-+    current_diff = truncate_diff(diff, 8000)
-+
-+    feedback = (
-+        f"\nYour previous response was rejected: {retry_feedback}\n"
-+        if retry_feedback else ""
-+    )
-+
-+    return f"""Generate one Git commit message for the code changes below.
-+
-+Allowed tags: {tags_text}
-+
-+Examples of this repository's commit messages:
-+{examples_text}
-+
-+Rules:
-+1. Understand the CURRENT DIFF before writing the message.
-+2. Describe what the diff actually changes, not your general instructions.
-+3. Choose one allowed tag, preserving its exact spelling.
-+4. Keep the message specific and concise.
-+5. Output exactly one line: tag: message
-+6. Do not explain your answer or repeat these instructions.
-+7. Never output a generic assistant response.
-+{feedback}
-+CURRENT DIFF:
-+{current_diff}
-+
-+Commit message:"""
-+
-+
-+def validate_generated_message(output, valid_tags):
-+    message = parse_commit_message(output, valid_tags)
-+    _, text = message.split(":", 1)
-+    text = text.strip()
-+    normalized = text.lower().strip(" .!")
-+
-+    generic_phrases = [
-+        "you are a helpful assistant",
-+        "i am a helpful assistant",
-+        "i'm a helpful assistant",
-+        "how can i help you",
-+        "i can help you with that",
-+        "answers questions in concise and accurate manner",
-+    ]
-+
-+    if any(phrase in normalized for phrase in generic_phrases):
-+        raise ValueError(
-+            "The output is a generic assistant response, not a description "
-+            "of the code changes."
-+        )
-+
-+    if len(text.split()) < 3:
-+        raise ValueError("The commit message is too vague or too short.")
-+
-+    return message
-+
-+
-+def generate_commit_message(diff, top_k=3):
-+    if not isinstance(diff, str) or not diff.strip():
-+        raise ValueError("Cannot generate a commit message from an empty diff.")
-+
-+    valid_tags = load_valid_tags()
-+    examples = retrieve_commits(diff, top_k=top_k)
-+    prompt = build_prompt(diff, examples, valid_tags)
-+
-+    system_prompt = (
-+        "You are a Git commit-message generator. "
-+        "Your only task is to describe the supplied code diff. "
-+        "Never respond as a general-purpose assistant. "
-+        "Return exactly one line in the format tag: message."
-+    )
-+
-+    for attempt in range(2):
-+        response = ollama.chat(
-+            model=GENERATION_MODEL,
-+            messages=[
-+                {"role": "system", "content": system_prompt},
-+                {"role": "user", "content": prompt},
-+            ],
-+            options={
-+                "temperature": 0,
-+                "num_predict": 60,
-+            },
-+            keep_alive="10m",
-+        )
-+
-+        content = getattr(response, "message", None)
-+        content = getattr(content, "content", None)
-+
-+        if content is None and isinstance(response, dict):
-+            content = response.get("message", {}).get("content")
-+
-+        if not isinstance(content, str) or not content.strip():
-+            raise RuntimeError("Gemma returned an empty response.")
-+
-+        print(f"Gemma raw response: {content.strip()}")
-+
-+        try:
-+            return validate_generated_message(content, valid_tags)
-+        except ValueError as exc:
-+            if attempt == 1:
-+                raise RuntimeError(
-+                    f"Gemma failed to generate a valid commit message: {exc}"
-+                ) from exc
-+
-+            prompt = build_prompt(
-+                diff,
-+                examples,
-+                valid_tags,
-+                retry_feedback=str(exc),
-+            )
-+
-+    raise RuntimeError("Commit message generation failed.")
-+
- 
- def load_valid_tags():
-     if not METADATA_PATH.exists():
-@@ -69,52 +189,6 @@ def truncate_diff(diff, max_chars):
-     return diff[:half] + "\n\n... [diff truncated] ...\n\n" + diff[-half:]
- 
- 
--def build_prompt(diff, examples, valid_tags, correction=None):
--    examples_text = []
--
--    for example in examples:
--        example_diff = truncate_diff(example["diff"], MAX_EXAMPLE_DIFF_CHARS)
--        examples_text.append(
--            f"Historical example {example['rank']}:\n"
--            f"Tag: {example['tag']}\n"
--            f"Message: {example['message']}\n"
--            f"Diff excerpt:\n{example_diff}"
--        )
--
--    examples_text = "\n\n".join(examples_text)
--    allowed_tags = ", ".join(valid_tags)
--    current_diff = truncate_diff(diff, MAX_DIFF_CHARS)
--
--    correction_text = (
--        f"\nYour previous output was invalid: {correction}. "
--        "Follow the required format exactly."
--        if correction
--        else ""
--    )
--
--    return (
--        f"""You generate concise Git commit messages from staged diffs.
--
--RULES:
--- Describe the actual changes in the CURRENT DIFF.
--- Use historical examples to learn the repository's commit-message style.
--- Do not copy an example message unless it accurately describes the current changes.
--- Select exactly one tag from the allowed tags below.
--- Preserve tag spelling exactly, including compound tags containing '&'.
--- Return exactly one line in this format: tag: message
--- Do not include Markdown, quotes, explanations, or additional lines.
--- Keep the message concise and specific.
--- Do not invent changes that are absent from the current diff.
--
--ALLOWED TAGS:
--{allowed_tags}
--
--CURRENT DIFF:
--{current_diff}
--{correction_text}
--
--Return only the commit message in the required format."""
--    )
- 
- 
- def parse_commit_message(output, valid_tags):
-@@ -147,30 +221,6 @@ def parse_commit_message(output, valid_tags):
-     return f"{tag}: {message}"
- 
- 
--def generate_commit_message(diff, top_k=DEFAULT_TOP_K):
--    if not isinstance(diff, str) or not diff.strip():
--        raise ValueError("Cannot generate a commit message from an empty diff.")
--
--    valid_tags = load_valid_tags()
--    examples = retrieve_commits(diff, top_k=top_k)
--
--    prompt = build_prompt(diff, examples, valid_tags)
--
--    for attempt in range(2):
--        try:
--            return request_commit_message(prompt, valid_tags)
--
--        except ValueError as exc:
--            if attempt == 1:
--                raise RuntimeError(
--                    f"Could not generate a valid commit message: {exc}"
--                ) from exc
--
--            prompt = build_prompt(diff, examples, valid_tags, correction=str(exc))
--
--    raise RuntimeError("Commit message generation failed.")
--
--
- def main():
-     parser = argparse.ArgumentParser(
-         description="Generate a commit message using FAISS retrieval and Gemma."
+-GENERATION_MODEL = "gemma3:1b"
++GENERATION_MODEL = "gemma4"
+ DEFAULT_TOP_K = 5
+ MAX_DIFF_CHARS = 10000
+ MAX_EXAMPLE_DIFF_CHARS = 600
+
+OUTPUT:
+python -m src.cli
+Reading staged changes...
+Staged diff saved to: D:\HarshitPC\Projects\commit-aid\git_diff.txt
+Saved staged diff to: D:\HarshitPC\Projects\commit-aid\git_diff.txt
+
+Retrieving similar historical commits and generating a message...
+Gemma raw response: update: Change generation model to gemma4
+
+Suggested commit:
+  update: Change generation model to gemma4
+
+[Y] Accept and commit   [e] Edit   [r] Regenerate   [n] Cancel
+> Y
+
+Committing staged changes...
+[main 247d3cc] update: Change generation model to gemma4
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+(commit-aid) 
