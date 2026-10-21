@@ -1,4 +1,4 @@
-# GAI — AI-Powered Git Commit Message Generator
+# GAI — LLM-Powered Git Commit Message Generator
 
 GAI generates Git commit messages locally using Ollama, FAISS, and historical commit data from your repository. It retrieves similar past commits, analyzes the staged changes, and generates a message that follows your existing tagging conventions.
 
