@@ -1,4 +1,5 @@
 import time
+
 import ollama
 
 MODEL = "gemma3:1b"

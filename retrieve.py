@@ -1,6 +1,5 @@
 import argparse
 import json
-import shutil
 import subprocess
 from pathlib import Path
 
@@ -35,9 +34,7 @@ def load_vectorstore():
             f"Index contains {index.ntotal} vectors, "
             f"but metadata contains {len(metadata)} commits."
         )
-        raise ValueError(
-            msg
-        )
+        raise ValueError(msg)
 
     if index.ntotal == 0:
         raise ValueError("FAISS index is empty.")
@@ -119,7 +116,6 @@ def retrieve_commits(diff, top_k=DEFAULT_TOP_K):
     return results
 
 
-
 def get_staged_diff():
     try:
         result = subprocess.run(
@@ -128,7 +124,7 @@ def get_staged_diff():
             text=True,
             encoding="utf-8",
             errors="replace",
-            check=True
+            check=True,
         )
     except FileNotFoundError as exc:
         raise RuntimeError("Git is not installed or is not on PATH.") from exc

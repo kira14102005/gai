@@ -18,7 +18,7 @@ def extract_commits(repo_path: str, output_file: str):
     output_file.parent.mkdir(parents=True, exist_ok=True)
 
     # Get list of commit hashes and commit subjects
-    hashes_output = subprocess.check_output(  # noqa: S603
+    hashes_output = subprocess.check_output(
         [git_executable, "log", "--pretty=format:%H%x1f%s"],
         cwd=repo_path,
         encoding="utf-8",
@@ -39,7 +39,7 @@ def extract_commits(repo_path: str, output_file: str):
             subject = parts[1] if len(parts) > 1 else ""
 
             # Fetch diff for the specific commit
-            diff_output = subprocess.check_output(  # noqa: S603
+            diff_output = subprocess.check_output(
                 [git_executable, "show", "--format=", commit_hash],
                 cwd=repo_path,
                 encoding="utf-8",

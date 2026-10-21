@@ -39,10 +39,10 @@ def request_commit_message(prompt, valid_tags):
 
     return parse_commit_message(content, valid_tags)
 
+
 def build_prompt(diff, examples, valid_tags, retry_feedback=None):
     examples_text = "\n".join(
-        f"- {example['tag']}: {example['message']}"
-        for example in examples[:3]
+        f"- {example['tag']}: {example['message']}" for example in examples[:3]
     )
 
     tags_text = ", ".join(valid_tags)
@@ -50,7 +50,8 @@ def build_prompt(diff, examples, valid_tags, retry_feedback=None):
 
     feedback = (
         f"\nYour previous response was rejected: {retry_feedback}\n"
-        if retry_feedback else ""
+        if retry_feedback
+        else ""
     )
 
     return f"""Generate one Git commit message for the code changes below.
@@ -187,8 +188,6 @@ def truncate_diff(diff, max_chars):
 
     half = max_chars // 2
     return diff[:half] + "\n\n... [diff truncated] ...\n\n" + diff[-half:]
-
-
 
 
 def parse_commit_message(output, valid_tags):

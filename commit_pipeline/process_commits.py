@@ -53,7 +53,5 @@ def process_commits(input_file: str, output_json: str):
     with output_json.open("w", encoding="utf-8") as f:
         json.dump(commit_list, f, indent=2, ensure_ascii=False)
 
-    print(
-        f"[2/2 Process] Found {len(unique_tags)} unique tags: {sorted(unique_tags)}"
-    )
+    print(f"[2/2 Process] Found {len(unique_tags)} unique tags: {sorted(unique_tags)}")
     print(f"[2/2 Process] Saved {len(commit_list)} commits to '{output_json}'")
