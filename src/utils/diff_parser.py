@@ -99,7 +99,7 @@ def parse_diff(diff: str) -> dict[str, Any]:
         elif line.startswith("rename to "):
             current_file["path"] = _git_path(line[len("rename to ") :])
             current_file["status"] = "renamed"
-        elif line.startswith("Binary files ", "GIT binary patch"):
+        elif line.startswith(("Binary files ", "GIT binary patch")):
             current_file["binary"] = True
             finish_hunk()
         elif line.startswith("--- "):
