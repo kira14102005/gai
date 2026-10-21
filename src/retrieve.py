@@ -133,10 +133,8 @@ def get_staged_diff():
 
     diff = result.stdout
 
-    diff_path = Path.cwd() / "git_diff.txt"
-    diff_path.write_text(diff, encoding="utf-8")
-
-    print(f"Staged diff saved to: {diff_path}")
+    # diff_path = Path.cwd() / "git_diff.txt"
+    # diff_path.write_text(diff, encoding="utf-8")
 
     if not diff.strip():
         raise ValueError(

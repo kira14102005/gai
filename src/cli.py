@@ -12,7 +12,7 @@ from src.generate import generate_commit_message
 from src.retrieve import get_staged_diff
 from src.utils.diff_parser import format_changes, parse_diff
 
-DIFF_SNAPSHOT_PATH = Path.cwd() / "src/diffs/git_diff" + int(time.time()) + ".txt"
+DIFF_SNAPSHOT_PATH = Path.cwd() / "src" / "diffs" / f"git_diff{int(time.time())}.txt"
 
 
 class CliError(RuntimeError):
