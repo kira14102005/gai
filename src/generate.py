@@ -5,11 +5,11 @@ from pathlib import Path
 
 import ollama
 
-from retrieve import get_staged_diff, retrieve_commits
+from .retrieve import get_staged_diff, retrieve_commits
 
 # The prompt contains natural-language SQL-like phrases that trigger S608.
 
-ROOT_DIR = Path(__file__).resolve().parent
+ROOT_DIR = Path(__file__).resolve().parent.parent
 METADATA_PATH = ROOT_DIR / "vectorstore" / "metadata.json"
 
 GENERATION_MODEL = "gemma3:1b"

@@ -5,9 +5,10 @@ import faiss
 import numpy as np
 import ollama
 
-DATA_PATH = Path("data/commit_messages.json")
+ROOT_DIR = Path(__file__).resolve().parent.parent
+DATA_PATH = ROOT_DIR / "data" / "commit_messages.json"
 
-VECTORSTORE_PATH = Path("vectorstore")
+VECTORSTORE_PATH = ROOT_DIR / "vectorstore"
 INDEX_PATH = VECTORSTORE_PATH / "commits.index"
 METADATA_PATH = VECTORSTORE_PATH / "metadata.json"
 

@@ -7,7 +7,7 @@ import faiss
 import numpy as np
 import ollama
 
-ROOT_DIR = Path(__file__).resolve().parent
+ROOT_DIR = Path(__file__).resolve().parent.parent
 VECTORSTORE_PATH = ROOT_DIR / "vectorstore"
 INDEX_PATH = VECTORSTORE_PATH / "commits.index"
 METADATA_PATH = VECTORSTORE_PATH / "metadata.json"
