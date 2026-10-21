@@ -2,6 +2,13 @@
 set -euo pipefail
 
 GAI_PROJECT_DIR="/d/HarshitPC/Projects/commit-aid"
+GAI_PYTHON="$GAI_PROJECT_DIR/.venv/Scripts/python.exe"
 
-cd "$GAI_PROJECT_DIR"
-exec python -m src.cli "$@"
+if [[ ! -f "$GAI_PYTHON" ]]; then
+    echo "Error: GAI virtual environment not found: $GAI_PYTHON" >&2
+    exit 1
+fi
+
+export PYTHONPATH="$GAI_PROJECT_DIR${PYTHONPATH:+:$PYTHONPATH}"
+
+exec "$GAI_PYTHON" -m src.cli "$@"
