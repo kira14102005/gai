@@ -119,29 +119,35 @@ def retrieve_commits(diff, top_k=DEFAULT_TOP_K):
     return results
 
 
-def get_staged_diff():
-    git_executable = shutil.which("git")
-    if git_executable is None:
-        raise RuntimeError("Git is not installed or is not on PATH.")
 
+def get_staged_diff():
     try:
-        result = subprocess.run(  # noqa: S603
-            [git_executable, "diff", "--cached", "--no-ext-diff", "--unified=3"],
+        result = subprocess.run(
+            ["git", "diff", "--cached", "--no-ext-diff", "--unified=3"],
             capture_output=True,
             text=True,
             encoding="utf-8",
             errors="replace",
-            check=True,
+            check=True
         )
     except FileNotFoundError as exc:
         raise RuntimeError("Git is not installed or is not on PATH.") from exc
     except subprocess.CalledProcessError as exc:
         raise RuntimeError(f"Could not read staged diff: {exc.stderr}") from exc
 
-    if not result.stdout.strip():
-        raise ValueError("No staged changes found. Run git add first.")
+    diff = result.stdout
 
-    return result.stdout
+    diff_path = Path.cwd() / "git_diff.txt"
+    diff_path.write_text(diff, encoding="utf-8")
+
+    print(f"Staged diff saved to: {diff_path}")
+
+    if not diff.strip():
+        raise ValueError(
+            "No staged changes found. The empty diff was saved to git_diff.txt."
+        )
+
+    return diff
 
 
 def main():
