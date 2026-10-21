@@ -155,7 +155,9 @@ def commit_if_unchanged(message: str, original_diff: str) -> None:
         )
 
 
-def interactive_loop(diff: str, top_k: int, initial_message: str) -> int:
+def interactive_loop(
+    raw_diff: str, formatted_diff: str, top_k: int, initial_message: str
+) -> int:
     message = initial_message
 
     while True:
@@ -165,7 +167,7 @@ def interactive_loop(diff: str, top_k: int, initial_message: str) -> int:
         choice = input("> ").strip().lower()
 
         if choice in {"y", "yes"}:
-            commit_if_unchanged(message, diff)
+            commit_if_unchanged(message, raw_diff)
             return 0
         if choice in {"e", "edit"}:
             edited = edit_message(message)
@@ -174,7 +176,11 @@ def interactive_loop(diff: str, top_k: int, initial_message: str) -> int:
             continue
         if choice in {"r", "regenerate"}:
             try:
-                message = generate(diff, top_k)
+                message = generate_commit_message(
+                    formatted_diff,
+                    top_k=top_k,
+                    retrieval_diff=raw_diff,
+                )
             except CliError as exc:
                 print(f"\nGeneration failed: {exc}", file=sys.stderr)
                 retry = input("Try generating again? [y/N] ").strip().lower()
@@ -219,8 +225,7 @@ def main() -> int:
             retrieval_diff=raw_diff,
         )
         print(f"Saved staged diff to: {DIFF_SNAPSHOT_PATH}")
-        message = generate(raw_diff, args.top_k)
-        return interactive_loop(raw_diff, args.top_k, message)
+        return interactive_loop(raw_diff, formatted_diff, args.top_k, message)
     except (CliError, OSError, ValueError) as exc:
         print(f"\ngai: {exc}", file=sys.stderr)
         return 1
