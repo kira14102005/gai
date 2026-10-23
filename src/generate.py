@@ -141,6 +141,22 @@ def generate_commit_message(diff, top_k=3, retrieval_diff=None):
         if content is None and isinstance(response, dict):
             content = response.get("message", {}).get("content")
 
+        print("Full Ollama response:")
+        print(response)
+
+        print("Message:", getattr(response, "message", None))
+        print(
+            "Content:",
+            repr(getattr(getattr(response, "message", None), "content", None)),
+        )
+        print(
+            "Thinking:",
+            repr(getattr(getattr(response, "message", None), "thinking", None)),
+        )
+        print("Done reason:", getattr(response, "done_reason", None))
+        print("Prompt tokens:", getattr(response, "prompt_eval_count", None))
+        print("Generated tokens:", getattr(response, "eval_count", None))
+        
         if not isinstance(content, str) or not content.strip():
             raise RuntimeError("Gemma returned an empty response.")
 
