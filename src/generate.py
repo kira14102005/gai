@@ -130,9 +130,10 @@ def generate_commit_message(diff, top_k=3, retrieval_diff=None):
             ],
             options={
                 "temperature": 0.8,
-                "num_predict": 100,
+                "num_predict": 2048,
             },
             keep_alive="10m",
+            stream=False,
         )
 
         content = getattr(response, "message", None)
