@@ -18,28 +18,6 @@ MAX_DIFF_CHARS = 10000
 MAX_EXAMPLE_DIFF_CHARS = 600
 
 
-def request_commit_message(prompt, valid_tags):
-    response = ollama.chat(
-        model=GENERATION_MODEL,
-        messages=[{"role": "user", "content": prompt}],
-        options={"temperature": 0.1, "num_predict": 80},
-        keep_alive="10m",
-        stream=False,
-    )
-    print(f"Gemma raw response: {response.message.content}")
-
-    content = getattr(response, "message", None)
-    content = getattr(content, "content", None)
-
-    if content is None and isinstance(response, dict):
-        content = response.get("message", {}).get("content")
-
-    if not isinstance(content, str) or not content.strip():
-        raise ValueError("Gemma returned an empty response.")
-
-    return parse_commit_message(content, valid_tags)
-
-
 def build_prompt(diff, examples, valid_tags, retry_feedback=None):
     examples_text = "\n".join(
         f"- {example['tag']}: {example['message']}" for example in examples[:3]
