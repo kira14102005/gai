@@ -56,7 +56,7 @@ def ensure_git_repository() -> None:
 
 def staged_diff() -> str:
     # retrieve.get_staged_diff() is responsible for writing git_diff.txt.
-    diff = get_staged_diff()
+    diff = get_staged_diff(cwd=USER_DIR)
     if not isinstance(diff, str) or not diff.strip():
         raise CliError(
             "No staged changes found. Stage changes first with: git add <files>"

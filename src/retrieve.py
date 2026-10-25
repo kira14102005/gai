@@ -116,10 +116,11 @@ def retrieve_commits(diff, top_k=DEFAULT_TOP_K):
     return results
 
 
-def get_staged_diff():
+def get_staged_diff(cwd: Path | None = None):
     try:
         result = subprocess.run(
             ["git", "diff", "--cached", "--no-ext-diff", "--unified=3"],
+            cwd=cwd,  # Pass the USER_DIR as the current working directory to the subprocess
             capture_output=True,
             text=True,
             encoding="utf-8",
@@ -133,12 +134,9 @@ def get_staged_diff():
 
     diff = result.stdout
 
-    # diff_path = Path.cwd() / "git_diff.txt"
-    # diff_path.write_text(diff, encoding="utf-8")
-
     if not diff.strip():
         raise ValueError(
-            "No staged changes found. The empty diff was saved to git_diff.txt."
+            "No staged changes found. Stage changes first with: git add <files>"
         )
 
     return diff
