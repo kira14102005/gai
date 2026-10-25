@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import subprocess
 import sys
 import time
@@ -12,7 +13,13 @@ from src.generate import generate_commit_message
 from src.retrieve import get_staged_diff
 from src.utils.diff_parser import format_changes, parse_diff
 
-DIFF_SNAPSHOT_PATH = Path.cwd() / "src" / "diffs" / f"git_diff{int(time.time())}.txt"
+# Get the directory where the user actually ran 'gai'
+USER_DIR = Path(os.getenv("GAI_INVOCATION_CWD", Path.cwd()))
+
+# Example when running git commands or saving temporary snapshots:
+DIFF_SNAPSHOT_PATH = (
+    USER_DIR / "src" / "diffs" / f"git_diff{int(time.time())}.txt"
+)  # or keep snapshots locally
 
 
 class CliError(RuntimeError):
