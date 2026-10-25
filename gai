@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# 1. Capture the directory where the user typed 'gai' FIRST (before any cd)
+export GAI_INVOCATION_CWD="$PWD"
+
 GAI_PROJECT_DIR="/d/hr/gai"
 GAI_PYTHON="$GAI_PROJECT_DIR/.venv/Scripts/python.exe"
 
@@ -9,10 +12,7 @@ if [[ ! -f "$GAI_PYTHON" ]]; then
     exit 1
 fi
 
-# Save the directory where you ran the command
-export GAI_INVOCATION_CWD="$PWD"
-
-# Change to project directory so Python can import the module correctly
+# 2. Now change to the project directory so Python can find the module
 cd "$GAI_PROJECT_DIR" || { echo "Error: Failed to change directory to $GAI_PROJECT_DIR" >&2; exit 1; }
 
 export PYTHONPATH="$GAI_PROJECT_DIR"
