@@ -31,6 +31,7 @@ def run_git(*args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
         result = subprocess.run(
             ["git", *args],
             text=True,
+            cwd=USER_DIR,
             encoding="utf-8",
             errors="replace",
             capture_output=True,
