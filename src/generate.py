@@ -12,7 +12,7 @@ from .retrieve import get_staged_diff, retrieve_commits
 ROOT_DIR = Path(__file__).resolve().parent.parent
 METADATA_PATH = ROOT_DIR / "vectorstore" / "metadata.json"
 
-GENERATION_MODEL = "gemma4"
+GENERATION_MODEL = "gemma4b"
 DEFAULT_TOP_K = 5
 MAX_DIFF_CHARS = 10000
 MAX_EXAMPLE_DIFF_CHARS = 600
